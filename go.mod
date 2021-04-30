@@ -1,4 +1,4 @@
-module github.com/jdamata/drone-teams
+module github.com/uchugroup/drone-teams
 
 go 1.14
 

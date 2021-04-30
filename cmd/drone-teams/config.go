@@ -6,7 +6,7 @@
 package main
 
 import (
-	"github.com/jdamata/drone-teams/plugin"
+	"github.com/uchugroup/drone-teams/plugin"
 	"github.com/urfave/cli/v2"
 )
 

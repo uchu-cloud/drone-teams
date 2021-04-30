@@ -1,0 +1,61 @@
+name: CI Build Docker images
+
+on:
+  push:
+    tags:
+      - 'v*'
+#     branches: [ master ]
+
+  workflow_dispatch:
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Dockerhub login
+        env:
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+        run: echo "${DOCKER_PASSWORD}" | docker login --username ${DOCKER_USERNAME} --password-stdin
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: crazy-max/ghaction-docker-buildx@v1
+        with:
+            version: latest
+
+      - name: Build AMD_64 dockerfile
+        env:
+          TAG: ${{ github.ref }}
+        run: |
+          docker buildx build \
+          --platform=linux/amd64 \
+          --output "type=image,push=true" \
+          --file ./Dockerfile . \
+          --tag uchugroup/drone-teams:latest \
+          --tag uchugroup/drone-teams:v$(echo "${TAG}"  | sed 's/[a-z/-]//g')
+
+      - name: Build ARM_64 dockerfile
+        env:
+          TAG: ${{ github.ref }}
+        run: |
+          docker buildx build \
+          --platform=linux/arm64 \
+          --output "type=image,push=true" \
+          --file ./Dockerfile.arm64 . \
+          --tag uchugroup/drone-teams:latest-arm64 \
+          --tag uchugroup/drone-teams:v$(echo "${TAG}"  | sed 's/[a-z/-]//g')-arm64
+
+      - name: Build ARM_v7 dockerfile
+        env:
+          TAG: ${{ github.ref }}
+        run: |
+          docker buildx build \
+          --platform=linux/arm/v7 \
+          --output "type=image,push=true" \
+          --file ./Dockerfile.armv7 . \
+          --tag uchugroup/drone-teams:latest-armv7 \
+          --tag uchugroup/drone-teams:v$(echo "${TAG}"  | sed 's/[a-z/-]//g')-armv7

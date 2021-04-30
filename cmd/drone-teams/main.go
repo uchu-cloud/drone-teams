@@ -13,8 +13,8 @@ import (
 	"github.com/drone-plugins/drone-plugin-lib/errors"
 	"github.com/drone-plugins/drone-plugin-lib/urfave"
 	"github.com/joho/godotenv"
+	"github.com/uchugroup/drone-teams/plugin"
 	"github.com/urfave/cli/v2"
-	"github.com/jdamata/drone-teams/plugin"
 )
 
 var version = "unknown"

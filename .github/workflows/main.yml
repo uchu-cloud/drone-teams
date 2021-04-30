@@ -25,7 +25,10 @@ jobs:
         id: buildx
         uses: crazy-max/ghaction-docker-buildx@v1
         with:
-            version: latest
+          version: latest
+
+      - name: Run a multi-line script
+        run: ls -la
 
       - name: Build AMD_64 dockerfile
         env:

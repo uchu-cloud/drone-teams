@@ -3,7 +3,7 @@ FROM golang:1.16-alpine as builder
 WORKDIR /go/src/drone-teams
 COPY . .
 
-RUN ls -la
+RUN ls -la ./cmd && ls -la ./cmd/drone-teams
 RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -a -tags netgo -o drone-teams ./cmd/drone-teams
 
 FROM alpine:3.13

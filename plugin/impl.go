@@ -51,23 +51,24 @@ func (p *Plugin) Execute() error {
 	// Default card color is green
 	themeColor := "96FF33"
 
+	// Create list of actions
+	actions := []OpenURIAction{
+		{
+			Name: "Open repository",
+			Targets: []OpenURITarget{
+				{
+					OS:  "default",
+					URI: p.pipeline.Repo.Link,
+				},
+			},
+		},
+	}
+
 	// Create list of card facts
 	facts := []MessageCardSectionFact{
 		{
 			Name:  "Build Number",
 			Value: fmt.Sprintf("%d", p.pipeline.Build.Number),
-		},
-		{
-			Name:  "Time",
-			Value: p.pipeline.Build.Started.String(),
-		},
-		{
-			Name:  "Repo Link",
-			Value: p.pipeline.Repo.Link,
-		},
-		{
-			Name:  "Branch",
-			Value: p.pipeline.Build.Branch,
 		},
 		{
 			Name:  "Git Author",
@@ -98,14 +99,24 @@ func (p *Plugin) Execute() error {
 
 	// If commit link is not null add commit link fact to card
 	if p.pipeline.Commit.Link != "" {
-		facts = append(facts, MessageCardSectionFact{
-			Name:  "Commit Link",
-			Value: p.pipeline.Commit.Link,
+		actions = append(actions, OpenURIAction{
+			Name: "Open commit diff",
+			Targets: []OpenURITarget{
+				{
+					OS:  "default",
+					URI: p.pipeline.Commit.Link,
+				},
+			},
 		})
 	} else if commitLink, present := os.LookupEnv("DRONE_COMMIT_LINK"); present && commitLink != "" {
-		facts = append(facts, MessageCardSectionFact{
-			Name:  "Commit Link",
-			Value: commitLink,
+		actions = append(actions, OpenURIAction{
+			Name: "Open commit diff",
+			Targets: []OpenURITarget{
+				{
+					OS:  "default",
+					URI: commitLink,
+				},
+			},
 		})
 	}
 
@@ -127,13 +138,17 @@ func (p *Plugin) Execute() error {
 		Context:    "http://schema.org/extensions",
 		ThemeColor: themeColor,
 		Summary:    p.pipeline.Repo.Slug,
-		Sections: []MessageCardSection{{
-			ActivityTitle:    p.pipeline.Repo.Slug,
-			ActivitySubtitle: strings.ToUpper(p.settings.Status),
-			ActivityImage:    "https://github.com/jdamata/drone-teams/raw/master/drone.png",
-			Markdown:         false,
-			Facts:            facts,
-		}},
+		Sections: []MessageCardSection{
+			{
+				ActivityImage:    "https://github.com/uchugroup/drone-teams/raw/master/drone.png",
+				ActivityTitle:    fmt.Sprintf("%s (%s)", p.pipeline.Repo.Slug, p.pipeline.Build.Branch),
+				ActivitySubtitle: strings.ToUpper(p.settings.Status),
+				// ActivityText:     fmt.Sprintf("Start time: %s)", p.pipeline.Build.Started.String()),
+				Markdown:        false,
+				Facts:           facts,
+				PotentialAction: actions,
+			},
+		},
 	}
 
 	log.Info("Generated card: ", card)

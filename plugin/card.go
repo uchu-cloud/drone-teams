@@ -1,11 +1,12 @@
 package plugin
 
 type MessageCard struct {
-	Type       string
-	Context    string
-	ThemeColor string
-	Summary    string
-	Sections   []MessageCardSection
+	Type            string
+	Context         string
+	ThemeColor      string
+	Summary         string
+	Sections        []MessageCardSection
+	PotentialAction []OpenURIAction
 }
 
 type MessageCardSection struct {
@@ -14,7 +15,6 @@ type MessageCardSection struct {
 	ActivitySubtitle string
 	ActivityText     string
 	Facts            []MessageCardSectionFact
-	PotentialAction  []OpenURIAction
 	Markdown         bool
 }
 
@@ -24,6 +24,7 @@ type MessageCardSectionFact struct {
 }
 
 type OpenURIAction struct {
+	Type    string `json:"@type,omitempty"`
 	Name    string
 	Targets []OpenURITarget
 }

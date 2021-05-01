@@ -54,6 +54,7 @@ func (p *Plugin) Execute() error {
 	// Create list of actions
 	actions := []OpenURIAction{
 		{
+			Type: "OpenUri",
 			Name: "Open repository",
 			Targets: []OpenURITarget{
 				{
@@ -100,6 +101,7 @@ func (p *Plugin) Execute() error {
 	// If commit link is not null add commit link fact to card
 	if p.pipeline.Commit.Link != "" {
 		actions = append(actions, OpenURIAction{
+			Type: "OpenUri",
 			Name: "Open commit diff",
 			Targets: []OpenURITarget{
 				{
@@ -110,6 +112,7 @@ func (p *Plugin) Execute() error {
 		})
 	} else if commitLink, present := os.LookupEnv("DRONE_COMMIT_LINK"); present && commitLink != "" {
 		actions = append(actions, OpenURIAction{
+			Type: "OpenUri",
 			Name: "Open commit diff",
 			Targets: []OpenURITarget{
 				{
@@ -144,11 +147,11 @@ func (p *Plugin) Execute() error {
 				ActivityTitle:    fmt.Sprintf("%s (%s)", p.pipeline.Repo.Slug, p.pipeline.Build.Branch),
 				ActivitySubtitle: strings.ToUpper(p.settings.Status),
 				// ActivityText:     fmt.Sprintf("Start time: %s)", p.pipeline.Build.Started.String()),
-				Markdown:        false,
-				Facts:           facts,
-				PotentialAction: actions,
+				Markdown: false,
+				Facts:    facts,
 			},
 		},
+		PotentialAction: actions,
 	}
 
 	log.Info("Generated card: ", card)

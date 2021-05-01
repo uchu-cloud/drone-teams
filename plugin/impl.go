@@ -167,7 +167,7 @@ func (p *Plugin) Execute() error {
 				ActivityImage:    "https://github.com/uchugroup/drone-teams/raw/master/drone.png",
 				ActivityTitle:    fmt.Sprintf("%s (%s%s)", p.pipeline.Repo.Slug, p.pipeline.Build.Branch, p.pipeline.Build.Tag),
 				ActivitySubtitle: strings.ToUpper(p.settings.Status),
-				ActivityText:     fmt.Sprintf("%s %s", strings.ToUpper(p.pipeline.Build.Event), p.pipeline.Commit.Ref),
+				ActivityText:     fmt.Sprintf("%s %s", p.pipeline.Build.Event, p.pipeline.Commit.Ref),
 				Markdown:         false,
 				Facts:            facts,
 			},

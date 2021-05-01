@@ -27,9 +27,6 @@ jobs:
         with:
           version: latest
 
-      - name: Run a multi-line script
-        run: ls -la
-
       - name: Build AMD_64 dockerfile
         env:
           TAG: ${{ github.ref }}

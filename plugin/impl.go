@@ -51,20 +51,6 @@ func (p *Plugin) Execute() error {
 	// Default card color is green
 	themeColor := "96FF33"
 
-	// Create list of actions
-	actions := []OpenURIAction{
-		{
-			Type: "OpenUri",
-			Name: "Open repository",
-			Targets: []OpenURITarget{
-				{
-					OS:  "default",
-					URI: p.pipeline.Repo.Link,
-				},
-			},
-		},
-	}
-
 	// Create list of card facts
 	facts := []MessageCardSectionFact{
 		{
@@ -75,10 +61,14 @@ func (p *Plugin) Execute() error {
 			Name:  "Git Author",
 			Value: fmt.Sprintf("%s (%s)", p.pipeline.Commit.Author, p.pipeline.Commit.AuthorEmail),
 		},
-		{
+	}
+
+	// Check for commit message
+	if len(p.pipeline.Commit.Message) > 0 {
+		facts = append(facts, MessageCardSectionFact{
 			Name:  "Commit Message",
 			Value: p.pipeline.Commit.Message,
-		},
+		})
 	}
 
 	// Add custom facts supplied by the user
@@ -96,6 +86,20 @@ func (p *Plugin) Execute() error {
 		}
 
 		facts = append(facts, card)
+	}
+
+	// Create list of actions
+	actions := []OpenURIAction{
+		{
+			Type: "OpenUri",
+			Name: "Open repository",
+			Targets: []OpenURITarget{
+				{
+					OS:  "default",
+					URI: p.pipeline.Repo.Link,
+				},
+			},
+		},
 	}
 
 	// If commit link is not null add commit link fact to card
@@ -130,6 +134,23 @@ func (p *Plugin) Execute() error {
 			Name:  "Failed Build Steps",
 			Value: strings.Join(p.pipeline.Build.FailedSteps, " "),
 		})
+
+		actions = append(actions, OpenURIAction{
+			Type: "OpenUri",
+			Name: "Open build pipeline",
+			Targets: []OpenURITarget{
+				{
+					OS: "default",
+					URI: fmt.Sprintf("%s://%s/%s/%d",
+						p.pipeline.System.Proto,
+						p.pipeline.System.Host,
+						p.pipeline.Repo.Slug,
+						p.pipeline.Build.Number,
+					),
+				},
+			},
+		})
+
 		// If the plugin status setting is defined and is "building", set the color to blue
 	} else if p.settings.Status == "building" {
 		themeColor = "002BFF"
@@ -144,11 +165,11 @@ func (p *Plugin) Execute() error {
 		Sections: []MessageCardSection{
 			{
 				ActivityImage:    "https://github.com/uchugroup/drone-teams/raw/master/drone.png",
-				ActivityTitle:    fmt.Sprintf("%s (%s)", p.pipeline.Repo.Slug, p.pipeline.Build.Branch),
+				ActivityTitle:    fmt.Sprintf("%s (%s%s)", p.pipeline.Repo.Slug, p.pipeline.Build.Branch, p.pipeline.Build.Tag),
 				ActivitySubtitle: strings.ToUpper(p.settings.Status),
-				// ActivityText:     fmt.Sprintf("Start time: %s)", p.pipeline.Build.Started.String()),
-				Markdown: false,
-				Facts:    facts,
+				ActivityText:     fmt.Sprintf("%s %s", strings.ToUpper(p.pipeline.Build.Event), p.pipeline.Commit.Ref),
+				Markdown:         false,
+				Facts:            facts,
 			},
 		},
 		PotentialAction: actions,

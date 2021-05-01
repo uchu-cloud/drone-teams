@@ -103,25 +103,40 @@ func (p *Plugin) Execute() error {
 	}
 
 	// If commit link is not null add commit link fact to card
-	if p.pipeline.Commit.Link != "" {
-		actions = append(actions, OpenURIAction{
-			Type: "OpenUri",
-			Name: "Open commit diff",
-			Targets: []OpenURITarget{
-				{
-					OS:  "default",
-					URI: p.pipeline.Commit.Link,
+	// Only load this button for Push and Pull Requests, otherwise won't make sense
+	switch p.pipeline.Build.Event {
+	case "push", "pull_request":
+		if p.pipeline.Commit.Link != "" {
+			actions = append(actions, OpenURIAction{
+				Type: "OpenUri",
+				Name: "Open commit diff",
+				Targets: []OpenURITarget{
+					{
+						OS:  "default",
+						URI: p.pipeline.Commit.Link,
+					},
 				},
-			},
-		})
-	} else if commitLink, present := os.LookupEnv("DRONE_COMMIT_LINK"); present && commitLink != "" {
+			})
+		} else if commitLink, present := os.LookupEnv("DRONE_COMMIT_LINK"); present && commitLink != "" {
+			actions = append(actions, OpenURIAction{
+				Type: "OpenUri",
+				Name: "Open commit diff",
+				Targets: []OpenURITarget{
+					{
+						OS:  "default",
+						URI: commitLink,
+					},
+				},
+			})
+		}
+	case "tag":
 		actions = append(actions, OpenURIAction{
 			Type: "OpenUri",
-			Name: "Open commit diff",
+			Name: "Open tag list",
 			Targets: []OpenURITarget{
 				{
 					OS:  "default",
-					URI: commitLink,
+					URI: fmt.Sprintf("%s/tags", p.pipeline.Repo.Link),
 				},
 			},
 		})
@@ -167,7 +182,7 @@ func (p *Plugin) Execute() error {
 				ActivityImage:    "https://github.com/uchugroup/drone-teams/raw/master/drone.png",
 				ActivityTitle:    fmt.Sprintf("%s (%s%s)", p.pipeline.Repo.Slug, p.pipeline.Build.Branch, p.pipeline.Build.Tag),
 				ActivitySubtitle: strings.ToUpper(p.settings.Status),
-				ActivityText:     fmt.Sprintf("%s %s", p.pipeline.Build.Event, p.pipeline.Commit.Ref),
+				ActivityText:     fmt.Sprintf("%s %s %s", p.pipeline.Build.Event, p.pipeline.Build.DeployTo, p.pipeline.Commit.Ref),
 				Markdown:         false,
 				Facts:            facts,
 			},

@@ -32,7 +32,14 @@ With custom facts:
     - "Stage:TEST"
 ```
 
-![Sample](sample.png)
+Success sample:
+
+![Sample success](https://github.com/uchugroup/drone-teams/raw/master/sample_success.png)
+
+
+Failure sample:
+
+![Sample success](https://github.com/uchugroup/drone-teams/raw/master/sample_failure.png)
 
 
 ## Build

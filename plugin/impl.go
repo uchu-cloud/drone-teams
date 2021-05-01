@@ -59,15 +59,15 @@ func (p *Plugin) Execute() error {
 		},
 		{
 			Name:  "Git Author",
-			Value: fmt.Sprintf("%s (%s)", p.pipeline.Commit.Author, p.pipeline.Commit.AuthorEmail),
+			Value: fmt.Sprintf("%s <%s> (%s)", p.pipeline.Commit.Author.Name, p.pipeline.Commit.Author.Email, p.pipeline.Commit.Author.Username),
 		},
 	}
 
 	// Check for commit message
-	if len(p.pipeline.Commit.Message) > 0 {
+	if len(p.pipeline.Commit.Message.Body) > 0 {
 		facts = append(facts, MessageCardSectionFact{
 			Name:  "Commit Message",
-			Value: p.pipeline.Commit.Message,
+			Value: fmt.Sprintf("%s %s", p.pipeline.Commit.Message.Title, p.pipeline.Commit.Message.Body),
 		})
 	}
 
@@ -179,12 +179,17 @@ func (p *Plugin) Execute() error {
 		Summary:    p.pipeline.Repo.Slug,
 		Sections: []MessageCardSection{
 			{
+				Markdown:         false,
+				Facts:            facts,
 				ActivityImage:    "https://github.com/uchugroup/drone-teams/raw/master/drone.png",
 				ActivityTitle:    fmt.Sprintf("%s (%s%s)", p.pipeline.Repo.Slug, p.pipeline.Build.Branch, p.pipeline.Build.Tag),
 				ActivitySubtitle: strings.ToUpper(p.settings.Status),
-				ActivityText:     fmt.Sprintf("%s %s %s", p.pipeline.Build.Event, p.pipeline.Build.DeployTo, p.pipeline.Commit.Ref),
-				Markdown:         false,
-				Facts:            facts,
+				ActivityText: fmt.Sprintf("%s %s %s (run time %6.2f minutes)",
+					p.pipeline.Build.Event,
+					p.pipeline.Build.DeployTo,
+					p.pipeline.Commit.Ref,
+					p.pipeline.Build.Finished.Sub(p.pipeline.Build.Started).Minutes(),
+				),
 			},
 		},
 		PotentialAction: actions,

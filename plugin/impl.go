@@ -14,12 +14,14 @@ import (
 	"strings"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/urfave/cli/v2"
 )
 
 // Settings for the plugin.
 type Settings struct {
-	Webhook string
-	Status  string
+	Webhook     string
+	Status      string
+	CustomFacts cli.StringSlice
 }
 
 // Validate handles the settings validation of the plugin.
@@ -74,7 +76,25 @@ func (p *Plugin) Execute() error {
 		{
 			Name:  "Commit Message",
 			Value: p.pipeline.Commit.Message,
-		}}
+		},
+	}
+
+	// Add custom facts supplied by the user
+	for _, fact := range p.settings.CustomFacts.Value() {
+
+		factKV := strings.Split(fact, ":")
+
+		if len(factKV) < 2 {
+			continue
+		}
+
+		card := MessageCardSectionFact{
+			Name:  factKV[0],
+			Value: factKV[1],
+		}
+
+		facts = append(facts, card)
+	}
 
 	// If commit link is not null add commit link fact to card
 	if p.pipeline.Commit.Link != "" {

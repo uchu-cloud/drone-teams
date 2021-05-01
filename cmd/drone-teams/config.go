@@ -25,5 +25,11 @@ func settingsFlags(settings *plugin.Settings) []cli.Flag {
 			EnvVars:     []string{"PLUGIN_STATUS"},
 			Destination: &settings.Status,
 		},
+		&cli.StringSliceFlag{
+			Name:        "facts",
+			Usage:       "Add custom facts to the card",
+			EnvVars:     []string{"PLUGIN_FACTS"},
+			Destination: &settings.CustomFacts,
+		},
 	}
 }

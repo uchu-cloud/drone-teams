@@ -2,6 +2,41 @@
 
 Drone plugin to send teams notifications for build status
 
+## Usage
+
+```console
+docker run --rm \
+  -e PLUGIN_WEBHOOK=<WEBHOOK ENDPOINT> \
+  uchugroup/drone-teams
+```
+
+## Drone Pipeline Usage
+
+```yaml
+- name: teams-webhook
+  image: uchugroup/drone-teams
+  settings:
+    webhook: <WEBHOOK ENDPOINT>
+    facts:
+    - 
+```
+
+![Sample](sample.png)
+
+
+With custom facts:
+
+```yaml
+- name: teams-webhook
+  image: uchugroup/drone-teams
+  settings:
+    webhook: <WEBHOOK ENDPOINT>
+    facts:
+    - "fact 1 name:value"
+    - "fact 2 name:value"
+```
+
+
 ## Build
 
 Build the binary with the following command:
@@ -26,21 +61,3 @@ docker build \
   --file Dockerfile --tag uchugroup/drone-teams .
 ```
 
-## Usage
-
-```console
-docker run --rm \
-  -e PLUGIN_WEBHOOK=<WEBHOOK ENDPOINT> \
-  uchugroup/drone-teams
-```
-
-## Drone Pipeline Usage
-
-```yaml
-- name: teams-webhook
-  image: uchugroup/drone-teams
-  settings:
-    webhook: <WEBHOOK ENDPOINT>
-```
-
-![Sample](sample.png)

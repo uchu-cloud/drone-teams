@@ -21,9 +21,6 @@ docker run --rm \
     - 
 ```
 
-![Sample](sample.png)
-
-
 With custom facts:
 
 ```yaml
@@ -32,9 +29,10 @@ With custom facts:
   settings:
     webhook: <WEBHOOK ENDPOINT>
     facts:
-    - "fact 1 name:value"
-    - "fact 2 name:value"
+    - "Stage:TEST"
 ```
+
+![Sample](sample.png)
 
 
 ## Build

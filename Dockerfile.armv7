@@ -1,7 +1,7 @@
 FROM golang:1.16-alpine as builder
 
 WORKDIR /go/src/drone-teams
-COPY . .
+COPY . ./
 
 RUN GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=0 go build -a -tags netgo -o drone-teams ./cmd/drone-teams
 

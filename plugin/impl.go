@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
@@ -188,7 +189,7 @@ func (p *Plugin) Execute() error {
 					p.pipeline.Build.Event,
 					p.pipeline.Build.DeployTo,
 					p.pipeline.Commit.Ref,
-					p.pipeline.Build.Finished.Sub(p.pipeline.Build.Started).Minutes(),
+					time.Since(p.pipeline.Build.Started).Seconds()/60,
 				),
 			},
 		},

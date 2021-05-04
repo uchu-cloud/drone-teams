@@ -59,8 +59,24 @@ func (p *Plugin) Execute() error {
 			Value: fmt.Sprintf("%d", p.pipeline.Build.Number),
 		},
 		{
+			Name:  "Build created",
+			Value: p.pipeline.Build.Created.String(),
+		},
+		{
+			Name:  "Build start",
+			Value: p.pipeline.Build.Started.String(),
+		},
+		{
+			Name:  "Build finish",
+			Value: p.pipeline.Build.Finished.String(),
+		},
+		{
+			Name:  "Event time",
+			Value: time.Now().String(),
+		},
+		{
 			Name:  "Git Author",
-			Value: fmt.Sprintf("%s <%s> (%s)", p.pipeline.Commit.Author.Name, p.pipeline.Commit.Author.Email, p.pipeline.Commit.Author.Username),
+			Value: fmt.Sprintf("%s (%s)", p.pipeline.Commit.Author.Name, p.pipeline.Commit.Author.Email),
 		},
 	}
 

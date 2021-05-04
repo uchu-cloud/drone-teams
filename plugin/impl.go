@@ -59,8 +59,12 @@ func (p *Plugin) Execute() error {
 			Value: fmt.Sprintf("%d", p.pipeline.Build.Number),
 		},
 		{
-			Name:  "Git Author",
-			Value: fmt.Sprintf("%s (%s)", p.pipeline.Commit.Author.Name, p.pipeline.Commit.Author.Email),
+			Name: "Git Author",
+			Value: fmt.Sprintf("%s \"%s\" %s",
+				p.pipeline.Commit.Author.Name,
+				p.pipeline.Commit.Author.Email,
+				p.pipeline.Commit.Author.Username,
+			),
 		},
 	}
 

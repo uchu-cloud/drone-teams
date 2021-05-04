@@ -81,10 +81,10 @@ func (p *Plugin) Execute() error {
 	}
 
 	// Check for commit message
-	if len(p.pipeline.Commit.Message.Body) > 0 {
+	if len(p.pipeline.Commit.Message.String()) > 0 {
 		facts = append(facts, MessageCardSectionFact{
 			Name:  "Commit Message",
-			Value: fmt.Sprintf("%s %s", p.pipeline.Commit.Message.Title, p.pipeline.Commit.Message.Body),
+			Value: p.pipeline.Commit.Message.String(),
 		})
 	}
 
@@ -123,25 +123,20 @@ func (p *Plugin) Execute() error {
 	// Only load this button for Push and Pull Requests, otherwise won't make sense
 	switch p.pipeline.Build.Event {
 	case "push", "pull_request":
+		link := ""
 		if p.pipeline.Commit.Link != "" {
-			actions = append(actions, OpenURIAction{
-				Type: "OpenUri",
-				Name: "Open commit diff",
-				Targets: []OpenURITarget{
-					{
-						OS:  "default",
-						URI: p.pipeline.Commit.Link,
-					},
-				},
-			})
+			link = p.pipeline.Commit.Link
 		} else if commitLink, present := os.LookupEnv("DRONE_COMMIT_LINK"); present && commitLink != "" {
+			link = commitLink
+		}
+		if len(link) > 0 {
 			actions = append(actions, OpenURIAction{
 				Type: "OpenUri",
 				Name: "Open commit diff",
 				Targets: []OpenURITarget{
 					{
 						OS:  "default",
-						URI: commitLink,
+						URI: link,
 					},
 				},
 			})

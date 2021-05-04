@@ -59,22 +59,6 @@ func (p *Plugin) Execute() error {
 			Value: fmt.Sprintf("%d", p.pipeline.Build.Number),
 		},
 		{
-			Name:  "Build created",
-			Value: p.pipeline.Build.Created.String(),
-		},
-		{
-			Name:  "Build start",
-			Value: p.pipeline.Build.Started.String(),
-		},
-		{
-			Name:  "Build finish",
-			Value: p.pipeline.Build.Finished.String(),
-		},
-		{
-			Name:  "Event time",
-			Value: time.Now().String(),
-		},
-		{
 			Name:  "Git Author",
 			Value: fmt.Sprintf("%s (%s)", p.pipeline.Commit.Author.Name, p.pipeline.Commit.Author.Email),
 		},
@@ -129,6 +113,7 @@ func (p *Plugin) Execute() error {
 		} else if commitLink, present := os.LookupEnv("DRONE_COMMIT_LINK"); present && commitLink != "" {
 			link = commitLink
 		}
+
 		if len(link) > 0 {
 			actions = append(actions, OpenURIAction{
 				Type: "OpenUri",
@@ -196,11 +181,11 @@ func (p *Plugin) Execute() error {
 				ActivityImage:    "https://github.com/uchugroup/drone-teams/raw/master/drone.png",
 				ActivityTitle:    fmt.Sprintf("%s (%s%s)", p.pipeline.Repo.Slug, p.pipeline.Build.Branch, p.pipeline.Build.Tag),
 				ActivitySubtitle: strings.ToUpper(p.settings.Status),
-				ActivityText: fmt.Sprintf("%s %s %s (run time %6.2f seconds)",
+				ActivityText: fmt.Sprintf("%s %s %s (build time %s)",
 					p.pipeline.Build.Event,
 					p.pipeline.Build.DeployTo,
 					p.pipeline.Commit.Ref,
-					time.Since(p.pipeline.Build.Started).Seconds(),
+					time.Since(p.pipeline.Build.Created).String(),
 				),
 			},
 		},

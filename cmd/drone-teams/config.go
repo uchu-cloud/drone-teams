@@ -31,5 +31,17 @@ func settingsFlags(settings *plugin.Settings) []cli.Flag {
 			EnvVars:     []string{"PLUGIN_FACTS"},
 			Destination: &settings.CustomFacts,
 		},
+		&cli.BoolFlag{
+			Name:        "logs_on_error",
+			Usage:       "Display logs on error",
+			EnvVars:     []string{"PLUGIN_LOGS_ON_ERROR"},
+			Destination: &settings.Logs.OnError,
+		},
+		&cli.StringFlag{
+			Name:        "logs_access_token",
+			Usage:       "Access token to read the logs",
+			EnvVars:     []string{"PLUGIN_LOGS_ACCESS_TOKEN"},
+			Destination: &settings.Logs.AccessToken,
+		},
 	}
 }

@@ -9,6 +9,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
@@ -23,6 +24,39 @@ type Settings struct {
 	Webhook     string
 	Status      string
 	CustomFacts cli.StringSlice
+	Logs        Logs
+}
+
+type Logs struct {
+	OnError     bool
+	AccessToken string
+}
+
+type BuildInfo struct {
+	Number int
+	Status string
+	Stages []BuildStage
+}
+
+type BuildStage struct {
+	Number   int
+	Name     string
+	Status   string
+	ExitCode int
+	Steps    []BuildStep
+}
+
+type BuildStep struct {
+	Number   int
+	Name     string
+	Status   string
+	ExitCode int
+}
+
+type BuildLog struct {
+	Proc string
+	Pos  int
+	Out  string
 }
 
 // Validate handles the settings validation of the plugin.
@@ -146,10 +180,18 @@ func (p *Plugin) Execute() error {
 	// If build has failed, change color to red and add failed step fact
 	if p.settings.Status == "failure" {
 		themeColor = "FF5733"
+
 		facts = append(facts, MessageCardSectionFact{
 			Name:  "Failed Build Steps",
 			Value: strings.Join(p.pipeline.Build.FailedSteps, " "),
 		})
+
+		if p.settings.Logs.OnError && len(p.settings.Logs.AccessToken) > 0 {
+			logs, err := p.assembleLogs()
+			if err == nil && logs != nil && len(logs) > 0 {
+				facts = append(facts, logs...)
+			}
+		}
 
 		actions = append(actions, OpenURIAction{
 			Type: "OpenUri",
@@ -189,7 +231,7 @@ func (p *Plugin) Execute() error {
 					p.pipeline.Build.Event,
 					p.pipeline.Build.DeployTo,
 					p.pipeline.Commit.Ref,
-					time.Since(p.pipeline.Build.Created).Truncate(time.Second).String(),
+					time.Since(p.pipeline.Build.Created).Round(time.Second).String(),
 				),
 			},
 		},
@@ -205,5 +247,150 @@ func (p *Plugin) Execute() error {
 		log.Error("Failed to send request to teams webhook")
 		return err
 	}
+
 	return nil
+}
+
+func (p *Plugin) assembleLogs() ([]MessageCardSectionFact, error) {
+
+	logs := make([]MessageCardSectionFact, 0)
+
+	if len(p.pipeline.Build.FailedSteps) == 0 {
+		return logs, nil
+	}
+
+	// Get build info
+	req, err := http.NewRequest("GET", fmt.Sprintf("https://%s/api/repos/%s/%s/builds/%d",
+		p.pipeline.System.Host,
+		p.pipeline.Repo.Owner,
+		p.pipeline.Repo.Name,
+		p.pipeline.Build.Number,
+	), nil)
+	if err != nil {
+		log.Error("Failed to create build info request")
+		return nil, err
+	}
+
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", p.settings.Logs.AccessToken))
+
+	resp, err := p.network.Client.Do(req)
+
+	if err != nil {
+		log.Error("Failed to get build info")
+		return nil, err
+	} else if resp.StatusCode >= 400 {
+		log.Error("Failed to get build info")
+		return nil, fmt.Errorf("server error %s", resp.Status)
+	}
+
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Error("Failed to read build info")
+		return nil, err
+	}
+
+	buildInfo := new(BuildInfo)
+	if err = json.Unmarshal(data, buildInfo); err != nil {
+		log.Error("Failed to parse build info")
+		return nil, err
+	}
+
+	if buildInfo.Status == "success" {
+		return logs, nil
+	}
+
+	// Loop all stages
+	for _, buildStage := range buildInfo.Stages {
+
+		if buildStage.Status == "success" {
+			continue
+		}
+
+		for _, buildStep := range buildStage.Steps {
+
+			if buildStep.ExitCode == 0 {
+				continue
+			}
+
+			// Get logs
+			req, err := http.NewRequest("GET", fmt.Sprintf("https://%s/api/repos/%s/%s/builds/%d/logs/%d/%d",
+				p.pipeline.System.Host,
+				p.pipeline.Repo.Owner,
+				p.pipeline.Repo.Name,
+				p.pipeline.Build.Number,
+				buildStage.Number,
+				buildStage.Number,
+			), nil)
+			if err != nil {
+				log.Error("Failed to create build logs request")
+				return nil, err
+			}
+
+			req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", p.settings.Logs.AccessToken))
+
+			resp, err = p.network.Client.Do(req)
+
+			if err != nil {
+				log.Errorf("Failed to get log for %s/%s build %d stage %s step %s",
+					p.pipeline.Repo.Owner,
+					p.pipeline.Repo.Name,
+					p.pipeline.Build.Number,
+					buildStage.Name,
+					buildStage.Name,
+				)
+				return nil, err
+			} else if resp.StatusCode >= 400 {
+				log.Errorf("Failed to get log for %s/%s build %d stage %s step %s",
+					p.pipeline.Repo.Owner,
+					p.pipeline.Repo.Name,
+					p.pipeline.Build.Number,
+					buildStage.Name,
+					buildStage.Name,
+				)
+				return nil, fmt.Errorf("server error %s", resp.Status)
+			}
+
+			data, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				log.Errorf("Failed to read log for %s/%s build %d stage %s step %s",
+					p.pipeline.Repo.Owner,
+					p.pipeline.Repo.Name,
+					p.pipeline.Build.Number,
+					buildStage.Name,
+					buildStage.Name,
+				)
+				return nil, err
+			}
+
+			var buildLogs []BuildLog
+			if err = json.Unmarshal(data, &buildLogs); err != nil {
+				log.Errorf("Failed to parse log for %s/%s build %d stage %s step %s",
+					p.pipeline.Repo.Owner,
+					p.pipeline.Repo.Name,
+					p.pipeline.Build.Number,
+					buildStage.Name,
+					buildStage.Name,
+				)
+				return nil, err
+			}
+
+			// Compile logs
+			logValue := make([]string, 0)
+			for _, buildLog := range buildLogs {
+				logValue = append(logValue, fmt.Sprintf("Command #%d: %s\nResult: %s",
+					buildLog.Pos,
+					buildLog.Proc,
+					buildLog.Out,
+				))
+			}
+
+			var log MessageCardSectionFact
+			log.Name = fmt.Sprintf("Log for %s/%s", buildStage.Name, buildStep.Name)
+			log.Value = strings.Join(logValue, "\n")
+
+			logs = append(logs, log)
+		}
+	}
+
+	return logs, nil
 }

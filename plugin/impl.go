@@ -188,6 +188,10 @@ func (p *Plugin) Execute() error {
 		if p.settings.Logs.OnError && len(p.settings.Logs.AuthToken) > 0 {
 			logs, err := p.assembleLogs()
 			if err == nil && logs != nil && len(logs) > 0 {
+				facts = append(facts, MessageCardSectionFact{
+					Name:  "Logs",
+					Value: "",
+				})
 				facts = append(facts, logs...)
 			}
 		}
@@ -392,14 +396,21 @@ func (p *Plugin) assembleLogs() ([]MessageCardSectionFact, error) {
 			// Compile logs
 			logValue := make([]string, 0)
 			for _, buildLog := range buildLogs {
-				logValue = append(logValue, fmt.Sprintf("%d: %s",
+
+				color := "7d7d7d"
+				if strings.HasPrefix(buildLog.Out, "+") {
+					color = "363636"
+				}
+
+				logValue = append(logValue, fmt.Sprintf("<span style=\"color:#999999;\">%d: <\\/ span><span style=\"color:#%s;\">%s<\\/ span>",
 					buildLog.Pos,
-					buildLog.Out,
+					color,
+					strings.TrimPrefix(buildLog.Out, "+ "),
 				))
 			}
 
 			var log MessageCardSectionFact
-			log.Name = fmt.Sprintf("[%s/%s] log", buildStage.Name, buildStep.Name)
+			log.Name = fmt.Sprintf("[%s/%s]", buildStage.Name, buildStep.Name)
 			log.Value = strings.Join(logValue, "<br \\/>\n")
 
 			logs = append(logs, log)

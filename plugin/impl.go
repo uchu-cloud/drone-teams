@@ -54,9 +54,8 @@ type BuildStep struct {
 }
 
 type BuildLog struct {
-	Proc string
-	Pos  int
-	Out  string
+	Pos int
+	Out string
 }
 
 // Validate handles the settings validation of the plugin.
@@ -308,7 +307,7 @@ func (p *Plugin) assembleLogs() ([]MessageCardSectionFact, error) {
 
 		for _, buildStep := range buildStage.Steps {
 
-			if buildStep.ExitCode == 0 {
+			if buildStep.Status == "success" {
 				continue
 			}
 
@@ -377,9 +376,8 @@ func (p *Plugin) assembleLogs() ([]MessageCardSectionFact, error) {
 			// Compile logs
 			logValue := make([]string, 0)
 			for _, buildLog := range buildLogs {
-				logValue = append(logValue, fmt.Sprintf("Command #%d: %s\nResult: %s",
+				logValue = append(logValue, fmt.Sprintf("%d: %s",
 					buildLog.Pos,
-					buildLog.Proc,
 					buildLog.Out,
 				))
 			}

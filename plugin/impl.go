@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -388,13 +389,13 @@ func (p *Plugin) assembleLogs() ([]MessageCardSectionFact, error) {
 			for _, buildLog := range buildLogs {
 				logValue = append(logValue, fmt.Sprintf("%d: %s",
 					buildLog.Pos,
-					buildLog.Out,
+					url.QueryEscape(buildLog.Out),
 				))
 			}
 
 			var log MessageCardSectionFact
 			log.Name = fmt.Sprintf("[%s/%s] log", buildStage.Name, buildStep.Name)
-			log.Value = strings.Join(logValue, "<br/>\n")
+			log.Value = strings.Join(logValue, "<br \\/>\n")
 
 			logs = append(logs, log)
 		}

@@ -318,7 +318,7 @@ func (p *Plugin) assembleLogs() ([]MessageCardSectionFact, error) {
 				p.pipeline.Repo.Name,
 				p.pipeline.Build.Number,
 				buildStage.Number,
-				buildStage.Number,
+				buildStep.Number,
 			), nil)
 			if err != nil {
 				log.Error("Failed to create build logs request")
@@ -335,7 +335,7 @@ func (p *Plugin) assembleLogs() ([]MessageCardSectionFact, error) {
 					p.pipeline.Repo.Name,
 					p.pipeline.Build.Number,
 					buildStage.Name,
-					buildStage.Name,
+					buildStep.Name,
 				)
 				return nil, err
 			} else if resp.StatusCode >= 400 {
@@ -344,7 +344,7 @@ func (p *Plugin) assembleLogs() ([]MessageCardSectionFact, error) {
 					p.pipeline.Repo.Name,
 					p.pipeline.Build.Number,
 					buildStage.Name,
-					buildStage.Name,
+					buildStep.Name,
 				)
 				return nil, fmt.Errorf("server error %s", resp.Status)
 			}
@@ -384,7 +384,7 @@ func (p *Plugin) assembleLogs() ([]MessageCardSectionFact, error) {
 
 			var log MessageCardSectionFact
 			log.Name = fmt.Sprintf("Log for %s/%s", buildStage.Name, buildStep.Name)
-			log.Value = strings.Join(logValue, "\n")
+			log.Value = strings.Join(logValue, "<br/>\n")
 
 			logs = append(logs, log)
 		}

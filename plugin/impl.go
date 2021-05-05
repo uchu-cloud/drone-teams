@@ -60,7 +60,7 @@ func (p *Plugin) Execute() error {
 		},
 		{
 			Name: "Git Author",
-			Value: fmt.Sprintf("%s \"%s\" %s",
+			Value: fmt.Sprintf("%s \"%s\" (%s)",
 				p.pipeline.Commit.Author.Name,
 				p.pipeline.Commit.Author.Email,
 				p.pipeline.Commit.Author.Username,
@@ -189,7 +189,7 @@ func (p *Plugin) Execute() error {
 					p.pipeline.Build.Event,
 					p.pipeline.Build.DeployTo,
 					p.pipeline.Commit.Ref,
-					time.Since(p.pipeline.Build.Created).String(),
+					time.Since(p.pipeline.Build.Created).Truncate(time.Second).String(),
 				),
 			},
 		},

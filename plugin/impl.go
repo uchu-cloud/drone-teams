@@ -374,15 +374,14 @@ func (p *Plugin) assembleLogs() ([]MessageCardSectionFact, error) {
 				return nil, err
 			}
 
-			if len(buildLogs) == 0 {
-				log.Warnf("Log list is empty for %s/%s build %d stage %s step %s",
-					p.pipeline.Repo.Owner,
-					p.pipeline.Repo.Name,
-					p.pipeline.Build.Number,
-					buildStage.Name,
-					buildStage.Name,
-				)
-			}
+			log.Infof("Log list with %d lines for %s/%s build %d stage %s step %s",
+				len(buildLogs),
+				p.pipeline.Repo.Owner,
+				p.pipeline.Repo.Name,
+				p.pipeline.Build.Number,
+				buildStage.Name,
+				buildStage.Name,
+			)
 
 			// Compile logs
 			logValue := make([]string, 0)

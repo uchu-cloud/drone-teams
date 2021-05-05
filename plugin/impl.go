@@ -11,7 +11,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -395,7 +394,7 @@ func (p *Plugin) assembleLogs() ([]MessageCardSectionFact, error) {
 			for _, buildLog := range buildLogs {
 				logValue = append(logValue, fmt.Sprintf("%d: %s",
 					buildLog.Pos,
-					url.QueryEscape(buildLog.Out),
+					buildLog.Out,
 				))
 			}
 

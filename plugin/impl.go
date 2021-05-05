@@ -397,15 +397,18 @@ func (p *Plugin) assembleLogs() ([]MessageCardSectionFact, error) {
 			logValue := make([]string, 0)
 			for _, buildLog := range buildLogs {
 
-				color := "7d7d7d"
-				if strings.HasPrefix(buildLog.Out, "+") {
-					color = "363636"
+				beginTag := ""
+				closeTag := ""
+				if strings.HasPrefix(buildLog.Out, "+") || buildLog.Pos == 0 {
+					beginTag = "<b>"
+					closeTag = "<\\/ b>"
 				}
 
-				logValue = append(logValue, fmt.Sprintf("<span style=\"color:#999999;\">%d: <\\/ span><span style=\"color:#%s;\">%s<\\/ span>",
+				logValue = append(logValue, fmt.Sprintf("%d: %s%s%s",
 					buildLog.Pos,
-					color,
+					beginTag,
 					strings.TrimPrefix(buildLog.Out, "+ "),
+					closeTag,
 				))
 			}
 

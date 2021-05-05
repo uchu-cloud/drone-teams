@@ -295,31 +295,12 @@ func (p *Plugin) assembleLogs() ([]MessageCardSectionFact, error) {
 		return nil, err
 	}
 
-	if buildInfo.Status == "success" {
-		return logs, nil
-	} else {
-		log.Infof("Build %d with status %s, gathering logs for %d stages",
-			buildInfo.Number,
-			buildInfo.Status,
-			len(buildInfo.Stages),
-		)
-	}
-
 	// Loop all stages
 	for _, buildStage := range buildInfo.Stages {
-
-		log.Infof("Found stage %s with status %s", buildStage.Name, buildStage.Status)
-
-		if buildStage.Status == "failure" {
-			log.Infof("Stage %s failed, gathering logs for %d steps", buildStage.Name, len(buildStage.Steps))
-		} else {
-			continue
-		}
-
 		for _, buildStep := range buildStage.Steps {
 
 			if buildStep.Status == "failure" {
-				log.Infof("Step %s failed, gathering logs", buildStep.Name)
+				log.Infof("Stage %s step %s failed, gathering logs", buildStage.Name, buildStep.Name)
 			} else {
 				continue
 			}

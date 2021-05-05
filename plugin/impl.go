@@ -373,6 +373,16 @@ func (p *Plugin) assembleLogs() ([]MessageCardSectionFact, error) {
 				return nil, err
 			}
 
+			if len(buildLogs) == 0 {
+				log.Warnf("Log list is empty for %s/%s build %d stage %s step %s",
+					p.pipeline.Repo.Owner,
+					p.pipeline.Repo.Name,
+					p.pipeline.Build.Number,
+					buildStage.Name,
+					buildStage.Name,
+				)
+			}
+
 			// Compile logs
 			logValue := make([]string, 0)
 			for _, buildLog := range buildLogs {
@@ -383,7 +393,7 @@ func (p *Plugin) assembleLogs() ([]MessageCardSectionFact, error) {
 			}
 
 			var log MessageCardSectionFact
-			log.Name = fmt.Sprintf("Log for %s/%s", buildStage.Name, buildStep.Name)
+			log.Name = fmt.Sprintf("[%s/%s] log", buildStage.Name, buildStep.Name)
 			log.Value = strings.Join(logValue, "<br/>\n")
 
 			logs = append(logs, log)

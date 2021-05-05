@@ -276,10 +276,10 @@ func (p *Plugin) assembleLogs() ([]MessageCardSectionFact, error) {
 	resp, err := p.network.Client.Do(req)
 
 	if err != nil {
-		log.Error("Failed to get build info")
+		log.Errorf("Failed to get build info for %s", req.URL.String())
 		return nil, err
 	} else if resp.StatusCode >= 400 {
-		log.Error("Failed to get build info")
+		log.Errorf("Failed to get build info for %s with status %s", req.URL.String(), resp.Status)
 		return nil, fmt.Errorf("server error %s", resp.Status)
 	}
 

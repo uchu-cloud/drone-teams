@@ -66,3 +66,21 @@ docker build \
   --file Dockerfile --tag uchugroup/drone-teams .
 ```
 
+For arm64:
+
+```console
+docker build \
+  --label org.label-schema.build-date=$(date -u +"%Y-%m-%dT%H:%M:%SZ") \
+  --label org.label-schema.vcs-ref=$(git rev-parse --short HEAD) \
+  --file Dockerfile.arm64 --tag uchugroup/drone-teams .
+```
+
+For armhf / armv7:
+
+```console
+docker build \
+  --label org.label-schema.build-date=$(date -u +"%Y-%m-%dT%H:%M:%SZ") \
+  --label org.label-schema.vcs-ref=$(git rev-parse --short HEAD) \
+  --file Dockerfile.armv7 --tag uchugroup/drone-teams .
+```
+

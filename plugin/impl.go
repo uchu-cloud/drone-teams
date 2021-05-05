@@ -401,7 +401,7 @@ func (p *Plugin) assembleLogs() ([]MessageCardSectionFact, error) {
 				closeTag := ""
 				if strings.HasPrefix(buildLog.Out, "+") || buildLog.Pos == 0 {
 					beginTag = "<b>"
-					closeTag = "<\\/ b>"
+					closeTag = "</b>"
 				}
 
 				logValue = append(logValue, fmt.Sprintf("%d: %s%s%s",
@@ -414,7 +414,7 @@ func (p *Plugin) assembleLogs() ([]MessageCardSectionFact, error) {
 
 			var log MessageCardSectionFact
 			log.Name = fmt.Sprintf("[%s/%s]", buildStage.Name, buildStep.Name)
-			log.Value = strings.Join(logValue, "<br \\/>\n")
+			log.Value = strings.Join(logValue, "<br />\n")
 
 			logs = append(logs, log)
 		}

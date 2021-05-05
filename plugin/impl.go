@@ -28,8 +28,8 @@ type Settings struct {
 }
 
 type Logs struct {
-	OnError     bool
-	AccessToken string
+	OnError   bool
+	AuthToken string
 }
 
 type BuildInfo struct {
@@ -186,7 +186,7 @@ func (p *Plugin) Execute() error {
 			Value: strings.Join(p.pipeline.Build.FailedSteps, " "),
 		})
 
-		if p.settings.Logs.OnError && len(p.settings.Logs.AccessToken) > 0 {
+		if p.settings.Logs.OnError && len(p.settings.Logs.AuthToken) > 0 {
 			logs, err := p.assembleLogs()
 			if err == nil && logs != nil && len(logs) > 0 {
 				facts = append(facts, logs...)
@@ -271,7 +271,7 @@ func (p *Plugin) assembleLogs() ([]MessageCardSectionFact, error) {
 		return nil, err
 	}
 
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", p.settings.Logs.AccessToken))
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", p.settings.Logs.AuthToken))
 
 	resp, err := p.network.Client.Do(req)
 
@@ -326,7 +326,7 @@ func (p *Plugin) assembleLogs() ([]MessageCardSectionFact, error) {
 				return nil, err
 			}
 
-			req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", p.settings.Logs.AccessToken))
+			req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", p.settings.Logs.AuthToken))
 
 			resp, err = p.network.Client.Do(req)
 

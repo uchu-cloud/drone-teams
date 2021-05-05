@@ -301,13 +301,13 @@ func (p *Plugin) assembleLogs() ([]MessageCardSectionFact, error) {
 	// Loop all stages
 	for _, buildStage := range buildInfo.Stages {
 
-		if buildStage.Status == "success" {
+		if buildStage.Status != "failure" {
 			continue
 		}
 
 		for _, buildStep := range buildStage.Steps {
 
-			if buildStep.Status == "success" {
+			if buildStep.Status != "failure" {
 				continue
 			}
 

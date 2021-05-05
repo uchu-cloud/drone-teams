@@ -322,7 +322,13 @@ func (p *Plugin) assembleLogs() ([]MessageCardSectionFact, error) {
 				buildStep.Number,
 			), nil)
 			if err != nil {
-				log.Error("Failed to create build logs request")
+				log.Errorf("Failed to create build logs request for %s/%s build %d stage %s step %s",
+					p.pipeline.Repo.Owner,
+					p.pipeline.Repo.Name,
+					p.pipeline.Build.Number,
+					buildStage.Name,
+					buildStep.Name,
+				)
 				return nil, err
 			}
 
@@ -348,6 +354,14 @@ func (p *Plugin) assembleLogs() ([]MessageCardSectionFact, error) {
 					buildStep.Name,
 				)
 				return nil, fmt.Errorf("server error %s", resp.Status)
+			} else {
+				log.Errorf("Gathered logs successfully for %s/%s build %d stage %s step %s",
+					p.pipeline.Repo.Owner,
+					p.pipeline.Repo.Name,
+					p.pipeline.Build.Number,
+					buildStage.Name,
+					buildStep.Name,
+				)
 			}
 
 			data, err := ioutil.ReadAll(resp.Body)
@@ -374,7 +388,7 @@ func (p *Plugin) assembleLogs() ([]MessageCardSectionFact, error) {
 				return nil, err
 			}
 
-			log.Infof("Log list with %d lines for %s/%s build %d stage %s step %s",
+			log.Infof("Log with %d lines for %s/%s build %d stage %s step %s",
 				len(buildLogs),
 				p.pipeline.Repo.Owner,
 				p.pipeline.Repo.Name,

@@ -45,10 +45,14 @@ With log for steps with error:
 ```
 
 Logs require a drone-ci auth token with admin permissions to get the logs
+
 Without admin permissions drone will give a not found error when getting the logs
 
 You can use openssl to create a token and drone cli to create a machine user with the generated token and admin permissions
-Use this token as you auth_token
+
+Use the token as you auth_token
+
+Example commands:
 
 ```console
 foo@bar:~$ openssl rand -hex 16

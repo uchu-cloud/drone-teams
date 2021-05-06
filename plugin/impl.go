@@ -138,7 +138,7 @@ func (p *Plugin) Execute() error {
 		{
 			Type:    "OpenUri",
 			Name:    "Open repository",
-			Targets: &targets,
+			Targets: targets,
 		},
 	}
 
@@ -164,7 +164,7 @@ func (p *Plugin) Execute() error {
 			actions = append(actions, GenericAction{
 				Type:    "OpenUri",
 				Name:    "Open commit diff",
-				Targets: &targets,
+				Targets: targets,
 			})
 		}
 	case "tag":
@@ -178,7 +178,7 @@ func (p *Plugin) Execute() error {
 		actions = append(actions, GenericAction{
 			Type:    "OpenUri",
 			Name:    "Open tag list",
-			Targets: &targets,
+			Targets: targets,
 		})
 	}
 
@@ -217,7 +217,7 @@ func (p *Plugin) Execute() error {
 		actions = append(actions, GenericAction{
 			Type:    "OpenUri",
 			Name:    "Open build pipeline",
-			Targets: &targets,
+			Targets: targets,
 		})
 
 		// If the plugin status setting is defined and is "building", set the color to blue
@@ -233,19 +233,19 @@ func (p *Plugin) Execute() error {
 			{
 				Type:        "TextInput",
 				ID:          "target",
-				IsMultiline: &boolFalse,
+				IsMultiline: boolFalse,
 				Title:       "Deploy to (target)",
 			},
 			{
 				Type:        "TextInput",
 				ID:          "customvars",
-				IsMultiline: &boolFalse,
+				IsMultiline: boolFalse,
 				Title:       "Custom parameters (use format \"key1=value1&key2=value2\")",
 			},
 			{
 				Type:        "TextInput",
 				ID:          "token",
-				IsMultiline: &boolFalse,
+				IsMultiline: boolFalse,
 				Title:       "Auth Token (with admin permission)",
 			},
 		}
@@ -277,24 +277,24 @@ func (p *Plugin) Execute() error {
 			{
 				Type:    "HttpPOST",
 				Name:    "Promote",
-				Target:  &promoteUrl,
-				Body:    &emptyBody,
-				Headers: &headers,
+				Target:  promoteUrl,
+				Body:    emptyBody,
+				Headers: headers,
 			},
 			{
 				Type:    "HttpPOST",
 				Name:    "Rollback",
-				Target:  &rollbackUrl,
-				Body:    &emptyBody,
-				Headers: &headers,
+				Target:  rollbackUrl,
+				Body:    emptyBody,
+				Headers: headers,
 			},
 		}
 
 		actions = append(actions, GenericAction{
 			Type:    "ActionCard",
 			Name:    "Promote / Rollback",
-			Inputs:  &cardInputs,
-			Actions: &cardActions,
+			Inputs:  cardInputs,
+			Actions: cardActions,
 		})
 	}
 

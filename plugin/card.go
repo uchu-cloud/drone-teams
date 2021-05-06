@@ -6,7 +6,7 @@ type MessageCard struct {
 	ThemeColor      string
 	Summary         string
 	Sections        []MessageCardSection
-	PotentialAction []GenericAction
+	PotentialAction []OpenURIAction
 }
 
 type MessageCardSection struct {
@@ -23,44 +23,13 @@ type MessageCardSectionFact struct {
 	Value string
 }
 
-type GenericAction struct {
-	Type string
-	Name string
-	// For OpenURI
-	Targets *[]OpenURITarget `json:"targets,omitempty"`
-	// For HttpPOST
-	Target          *string     `json:"target,omitempty"`
-	Headers         *[]KeyValue `json:"headers,omitempty"`
-	Body            *string     `json:"body,omitempty"`
-	BodyContentType *string     `json:"bodyContentType,omitempty"`
-	// For ActionCard
-	Inputs  *[]GenericInput  `json:"inputs,omitempty"`
-	Actions *[]GenericAction `json:"actions,omitempty"`
-}
-
-type GenericInput struct {
-	Type       string
-	ID         string
-	IsRequired bool
-	Title      string
-	Value      string
-	// For TextInput
-	IsMultiline *bool `json:"isMultiline,omitempty"`
-	MaxLength   *int  `json:"maxLength,omitempty"`
-	// For DateInput
-	IncludeTime *bool `json:"includeTime,omitempty"`
-	// For MultichoiceInput
-	Choices       *[]KeyValue `json:"choices,omitempty"`
-	IsMultiSelect *bool       `json:"isMultiSelect,omitempty"`
-	Style         *string     `json:"style,omitempty"`
+type OpenURIAction struct {
+	Type    string `json:"@type,omitempty"`
+	Name    string
+	Targets []OpenURITarget
 }
 
 type OpenURITarget struct {
 	OS  string
 	URI string
-}
-
-type KeyValue struct {
-	Name  string
-	Value string
 }

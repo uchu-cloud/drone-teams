@@ -127,16 +127,18 @@ func (p *Plugin) Execute() error {
 	}
 
 	// Create list of actions
-	actions := []OpenURIAction{
+	targets := []OpenURITarget{
 		{
-			Type: "OpenUri",
-			Name: "Open repository",
-			Targets: []OpenURITarget{
-				{
-					OS:  "default",
-					URI: p.pipeline.Repo.Link,
-				},
-			},
+			OS:  "default",
+			URI: p.pipeline.Repo.Link,
+		},
+	}
+
+	actions := []GenericAction{
+		{
+			Type:    "OpenUri",
+			Name:    "Open repository",
+			Targets: &targets,
 		},
 	}
 
@@ -152,27 +154,31 @@ func (p *Plugin) Execute() error {
 		}
 
 		if len(link) > 0 {
-			actions = append(actions, OpenURIAction{
-				Type: "OpenUri",
-				Name: "Open commit diff",
-				Targets: []OpenURITarget{
-					{
-						OS:  "default",
-						URI: link,
-					},
+			targets := []OpenURITarget{
+				{
+					OS:  "default",
+					URI: link,
 				},
+			}
+
+			actions = append(actions, GenericAction{
+				Type:    "OpenUri",
+				Name:    "Open commit diff",
+				Targets: &targets,
 			})
 		}
 	case "tag":
-		actions = append(actions, OpenURIAction{
-			Type: "OpenUri",
-			Name: "Open tag list",
-			Targets: []OpenURITarget{
-				{
-					OS:  "default",
-					URI: fmt.Sprintf("%s/tags", p.pipeline.Repo.Link),
-				},
+		targets := []OpenURITarget{
+			{
+				OS:  "default",
+				URI: fmt.Sprintf("%s/tags", p.pipeline.Repo.Link),
 			},
+		}
+
+		actions = append(actions, GenericAction{
+			Type:    "OpenUri",
+			Name:    "Open tag list",
+			Targets: &targets,
 		})
 	}
 
@@ -196,25 +202,100 @@ func (p *Plugin) Execute() error {
 			}
 		}
 
-		actions = append(actions, OpenURIAction{
-			Type: "OpenUri",
-			Name: "Open build pipeline",
-			Targets: []OpenURITarget{
-				{
-					OS: "default",
-					URI: fmt.Sprintf("%s://%s/%s/%d",
-						p.pipeline.System.Proto,
-						p.pipeline.System.Host,
-						p.pipeline.Repo.Slug,
-						p.pipeline.Build.Number,
-					),
-				},
+		targets := []OpenURITarget{
+			{
+				OS: "default",
+				URI: fmt.Sprintf("%s://%s/%s/%d",
+					p.pipeline.System.Proto,
+					p.pipeline.System.Host,
+					p.pipeline.Repo.Slug,
+					p.pipeline.Build.Number,
+				),
 			},
+		}
+
+		actions = append(actions, GenericAction{
+			Type:    "OpenUri",
+			Name:    "Open build pipeline",
+			Targets: &targets,
 		})
 
 		// If the plugin status setting is defined and is "building", set the color to blue
 	} else if p.settings.Status == "building" {
 		themeColor = "002BFF"
+	}
+
+	// Add Promote / rollback action card
+	if p.settings.Status != "failure" {
+
+		boolFalse := false
+		cardInputs := []GenericInput{
+			{
+				Type:        "TextInput",
+				ID:          "target",
+				IsMultiline: &boolFalse,
+				Title:       "Deploy to (target)",
+			},
+			{
+				Type:        "TextInput",
+				ID:          "customvars",
+				IsMultiline: &boolFalse,
+				Title:       "Custom parameters (use format \"key1=value1&key2=value2\")",
+			},
+			{
+				Type:        "TextInput",
+				ID:          "token",
+				IsMultiline: &boolFalse,
+				Title:       "Auth Token (with admin permission)",
+			},
+		}
+
+		headers := []KeyValue{
+			{
+				Name:  "Authorization",
+				Value: "Bearer {{token.value}}",
+			},
+		}
+
+		promoteUrl := fmt.Sprintf("https://%s/api/repos/%s/%s/builds/%d/promote?target={{target.value}}&{{customvars.value}}",
+			p.pipeline.System.Host,
+			p.pipeline.Repo.Owner,
+			p.pipeline.Repo.Name,
+			p.pipeline.Build.Number,
+		)
+
+		rollbackUrl := fmt.Sprintf("https://%s/api/repos/%s/%s/builds/%d/rollback?target={{target.value}}&{{customvars.value}}",
+			p.pipeline.System.Host,
+			p.pipeline.Repo.Owner,
+			p.pipeline.Repo.Name,
+			p.pipeline.Build.Number,
+		)
+
+		emptyBody := "" // Nothing to be sent
+
+		cardActions := []GenericAction{
+			{
+				Type:    "HttpPOST",
+				Name:    "Promote",
+				Target:  &promoteUrl,
+				Body:    &emptyBody,
+				Headers: &headers,
+			},
+			{
+				Type:    "HttpPOST",
+				Name:    "Rollback",
+				Target:  &rollbackUrl,
+				Body:    &emptyBody,
+				Headers: &headers,
+			},
+		}
+
+		actions = append(actions, GenericAction{
+			Type:    "ActionCard",
+			Name:    "Promote / Rollback",
+			Inputs:  &cardInputs,
+			Actions: &cardActions,
+		})
 	}
 
 	// Create rich message card body

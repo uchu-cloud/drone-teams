@@ -126,7 +126,7 @@ func (p *Plugin) Execute() error {
 		facts = append(facts, card)
 	}
 
-	// Create list of actions
+	// Create base list of actions
 	actions := []OpenURIAction{
 		{
 			Type: "OpenUri",
@@ -196,26 +196,27 @@ func (p *Plugin) Execute() error {
 			}
 		}
 
-		actions = append(actions, OpenURIAction{
-			Type: "OpenUri",
-			Name: "Open build pipeline",
-			Targets: []OpenURITarget{
-				{
-					OS: "default",
-					URI: fmt.Sprintf("%s://%s/%s/%d",
-						p.pipeline.System.Proto,
-						p.pipeline.System.Host,
-						p.pipeline.Repo.Slug,
-						p.pipeline.Build.Number,
-					),
-				},
-			},
-		})
-
 		// If the plugin status setting is defined and is "building", set the color to blue
 	} else if p.settings.Status == "building" {
 		themeColor = "002BFF"
 	}
+
+	// Add Action to open build pipeline
+	actions = append(actions, OpenURIAction{
+		Type: "OpenUri",
+		Name: "Open build pipeline",
+		Targets: []OpenURITarget{
+			{
+				OS: "default",
+				URI: fmt.Sprintf("%s://%s/%s/%d",
+					p.pipeline.System.Proto,
+					p.pipeline.System.Host,
+					p.pipeline.Repo.Slug,
+					p.pipeline.Build.Number,
+				),
+			},
+		},
+	})
 
 	// Create rich message card body
 	card := MessageCard{
